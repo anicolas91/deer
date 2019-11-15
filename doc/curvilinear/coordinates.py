@@ -15,7 +15,7 @@ class CoordinateSystem:
     """
     return np.dot(la.inv(self.K(coords)), lgrad)
 
-  def grad_vec(self, coords, v, lgrad):
+  def grad_vector(self, coords, v, lgrad):
     """
       Take a vector in standard coordinates, apply the gradient, 
       and return to standard coordinates
@@ -25,9 +25,19 @@ class CoordinateSystem:
         v           vector in standard coordinates
         lgrad       local 
     """
-    return np.dot(np.dot(la.inv(self.K(coords)), (np.dot(lgrad, la.inv(self.K(coords))) + sum(
-        np.dot(self.L(coords, i), np.dot(K(coords), v)) 
-        for i in range(self.dim)))), la.inv(self.K(coords).T))
+    K = self.K(coords)
+    Ki = la.inv(K)
+    g = self.g(coords)
+    
+    print("HMM")
+    for i in range(3):
+      print(i)
+      print(v)
+      print(self.L(coords,i))
+      print(np.dot(v,self.L(coords,i)))
+
+    return np.vstack(list(np.dot(np.dot(la.inv(g),v), self.L(coords, i)) for i in range(3)))
+
 
 class Cartesian(CoordinateSystem):
   """
