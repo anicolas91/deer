@@ -9,7 +9,6 @@ registerMooseAction("DeerApp", NEMLMechanicsAction, "add_kernel");
 registerMooseAction("DeerApp", NEMLMechanicsAction, "add_material");
 registerMooseAction("DeerApp", NEMLMechanicsAction, "add_aux_variable");
 registerMooseAction("DeerApp", NEMLMechanicsAction, "add_aux_kernel");
-registerMooseAction("DeerApp", NEMLMechanicsAction, "init_problem");
 
 const std::vector<std::string> all_tensors = {
     "mechanical_strain", "stress", "elastic_strain", "inelastic_strain"};
@@ -62,9 +61,7 @@ NEMLMechanicsAction::NEMLMechanicsAction(const InputParameters &params)
 }
 
 void NEMLMechanicsAction::act() {
-  if (_current_task == "init_problem") {
-
-  } else if (_current_task == "add_variable") {
+  if (_current_task == "add_variable") {
     const bool second = _problem->mesh().hasSecondOrderElements();
 
     InputParameters params = _factory.getValidParams("MooseVariableBase");

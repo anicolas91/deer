@@ -2,7 +2,7 @@
 
 registerMooseObject("DeerApp", StressDivergenceNEML);
 
-MooseEnum MechanicsProblemType("cartesian axisymmetric" "cartesian");
+MooseEnum MechanicsProblemType("cartesian axisymmetric", "cartesian");
 
 template <>
 InputParameters
@@ -62,7 +62,23 @@ void StressDivergenceNEML::precalculateOffDiagJacobian(unsigned int jvar)
 
 Real StressDivergenceNEML::computeQpResidual()
 {
-  return _stress[_qp].row(_component) * _grad_test[_i][_qp];
+  if (_coords == "cartesian") {
+    return _stress[_qp].row(_component) * _grad_test[_i][_qp];
+  }
+  else if (_coords == "axisymmetric") {
+    if (_component == 0) {
+      return   _stress[_qp](0,0) * _grad_test[_i][_qp](0)
+             + _stress[_qp](0,1) * _grad_test[_i][_qp](1)
+             + _stress[_qp](2,2) * _test[_i][_qp] / _q_point[_qp](0);
+    }
+    else {
+      return   _stress[_qp](0,1) * _grad_test[_i][_qp](0)
+             + _stress[_qp](1,1) * _grad_test[_i][_qp](1);
+    }
+  }
+  else {
+    mooseError("Unsupported coordinate system in the kernel.");
+  }
 }
 
 Real StressDivergenceNEML::computeQpJacobian()
