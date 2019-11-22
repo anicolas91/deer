@@ -1,7 +1,8 @@
 import numpy as np
 import numpy.linalg as la
+import scipy.linalg as sla
 
-class CoordinateSystem:
+class OrthogonalCoordinateSystem:
   """
     Generic superclass for all coordinate systems
   """
@@ -46,23 +47,8 @@ class Cartesian(CoordinateSystem):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-  def g(self, coords):
-    """
-      The covariant metric components
-    """
-    return np.eye(self.dim)
-
-  def K(self, coords):
-    """
-      Transformation from standard to covariant
-    """
-    return np.eye(3)
-
-  def L(self, coords, i):
-    """
-      The Christoffel symbols of the second kind
-    """
-    return np.zeros((3,3))
+  def h(self, coords):
+    return np.ones((self.dim,))
 
 class Cylindrical(CoordinateSystem):
   """
@@ -71,39 +57,5 @@ class Cylindrical(CoordinateSystem):
   def __init__(self, *args, **kwargs):
     super().__init__(3, *args, **kwargs)
 
-  def g(self, coords):
-    """
-      The covariant metric components
-    """
-    return np.array([
-      [1.0, 0, 0], 
-      [0, coords[0]**2.0, 0],
-      [0, 0 , 1.0]])
-
-  def K(self, coords):
-    """
-      Transformation from standard to covariant
-    """
-    return np.array([
-      [1.0,0.0,0.0],
-      [0.0,coords[0],0],
-      [0.0,0.0,1.0]])
-
-  def L(self, coords, i):
-    """
-      The Christoffel symbols of the second kind
-    """
-    if i == 0:
-      return np.array([
-        [0,0,0],
-        [0,-coords[0],0],
-        [0,0,0.0]])
-    elif i == 1:
-      return np.array([
-        [0,1.0/coords[0],0],
-        [1.0/coords[0],0,0],
-        [0,0,0]])
-    elif i == 2:
-      return np.zeros((3,3))
-    else:
-      raise ValueError("Cylindrical coordinates have dim = 3!")
+  def h(self, coords):
+    return np.array([1,coords[0],1])
