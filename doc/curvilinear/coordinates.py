@@ -14,7 +14,7 @@ class OrthogonalCoordinateSystem:
       Take a scalar, apply the gradient, and return to 
       standard coordinates
     """
-    return np.dot(la.inv(self.K(coords)), lgrad)
+    return lgrad / self.h(coords)
 
   def grad_vector(self, coords, v, lgrad):
     """
@@ -26,21 +26,21 @@ class OrthogonalCoordinateSystem:
         v           vector in standard coordinates
         lgrad       local 
     """
-    K = self.K(coords)
-    Ki = la.inv(K)
-    g = self.g(coords)
-    
-    print("HMM")
-    for i in range(3):
-      print(i)
-      print(v)
-      print(self.L(coords,i))
-      print(np.dot(v,self.L(coords,i)))
+    G = np.zeros((self.dim,self.dim))
 
-    return np.vstack(list(np.dot(np.dot(la.inv(g),v), self.L(coords, i)) for i in range(3)))
+    h = self.h(coords)
+    dh = self.dh(coords)
 
+    for i in range(self.dim):
+      for j in range(self.dim):
+        if i == j:
+          G[i,j] = lgrad[i,i] / h[i] - v[i]/h[i]**2.0 * dh[i,i] + np.dot(dh, v)[i] / h[i]
+        else:
+          G[i,j] = (lgrad[i,j] - v[j]/h[i] * dh[j,i]) / h[j]
 
-class Cartesian(CoordinateSystem):
+    return G
+
+class Cartesian(OrthogonalCoordinateSystem):
   """
     The coordinates are (x1, x2, x3...)
   """
@@ -50,7 +50,10 @@ class Cartesian(CoordinateSystem):
   def h(self, coords):
     return np.ones((self.dim,))
 
-class Cylindrical(CoordinateSystem):
+  def dh(self, coords):
+    return np.zeros((3,3))
+
+class Cylindrical(OrthogonalCoordinateSystem):
   """
     The coordinates are (r, theta, z)
   """
@@ -59,3 +62,6 @@ class Cylindrical(CoordinateSystem):
 
   def h(self, coords):
     return np.array([1,coords[0],1])
+
+  def dh(self, coords):
+    return np.array([[0,0,0],[1,0,0],[0,0,0]])
