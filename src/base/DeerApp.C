@@ -34,6 +34,7 @@ static void
 associateSyntaxInner(Syntax & syntax, ActionFactory & /*action_factory*/)
 {
   registerSyntax("NEMLMechanicsAction", "NEMLMechanics");
+  registerSyntax("NEMLCPAction", "NEMLCP");
 }
 
 void

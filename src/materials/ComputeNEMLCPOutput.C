@@ -8,7 +8,7 @@ validParams<ComputeNEMLCPOutput>()
 {
   InputParameters params = validParams<ComputeNEMLStressUpdate>();
   params.addParam<UserObjectName>("euler_angle_provider","dummy"
-                                        "Name of Euelr angle provider user object");
+                                        "Name of Euler angle provider user object");
   params.addParam<unsigned int>("grain_id", 0,"ID of the grain for this material");
   return params;
 }
@@ -16,6 +16,7 @@ validParams<ComputeNEMLCPOutput>()
 ComputeNEMLCPOutput::ComputeNEMLCPOutput(const InputParameters & parameters)
    : ComputeNEMLStressUpdate(parameters),
     _orientation_q(declareProperty<std::vector<Real>>("orientation_q")),
+    _Fe(declareProperty<RankTwoTensor>("Fe")),
     _euler(parameters.isParamSetByUser("euler_angle_provider") ? &getUserObject<EulerAngleProvider>("euler_angle_provider") : nullptr), // May be making it a required parameter
     _grain(getParam<unsigned int>("grain_id"))
 {
@@ -45,9 +46,17 @@ ComputeNEMLCPOutput::initQpStatefulProperties()
       else{
         angles = _euler->getEulerAngles(_grain); // current orientation
       }
-      neml:: Orientation e = neml::Orientation::createEulerAngles(angles.phi1, angles.Phi, angles.phi2,"degrees");
+      neml::Orientation e = neml::Orientation::createEulerAngles(angles.phi1, angles.Phi, angles.phi2,"degrees");
       _cpmodel->set_active_orientation(&_hist[_qp].front(),e);
   }
+  
+  _orientation_q[_qp].resize(4);
+  neml::Orientation Q = _cpmodel->get_active_orientation(&(_hist[_qp].front()));
+  for (unsigned int i = 0; i < 4; i++) {
+    _orientation_q[_qp][i] = Q.quat()[i];
+  }
+
+  _Fe[_qp] = RankTwoTensor::Identity();
 }
 
 void
@@ -65,16 +74,20 @@ ComputeNEMLCPOutput::stressUpdate(
                s_np1, s_n, h_np1, h_n, A_np1, B_np1, u_np1, u_n,
                p_np1, p_n);
 
-  getCPOutput(h_np1); // passing the history for outputs
+  getCPOutput(h_np1, s_np1, T_np1); // passing the history for outputs
 }
 
 // Method to store CP output as material parameters
 void
-ComputeNEMLCPOutput::getCPOutput(double * const h_np1){
+ComputeNEMLCPOutput::getCPOutput(double * const h_np1, double * const s_np1, double T_np1)
+{
 
   _orientation_q[_qp].resize(4);
   neml::Orientation Q = _cpmodel->get_active_orientation(h_np1);
-     for (unsigned int i = 0; i < 4; i++){
-       _orientation_q[_qp][i] = Q.quat()[i];   // assigning quaternion
-     }
+  for (unsigned int i = 0; i < 4; i++){
+    _orientation_q[_qp][i] = Q.quat()[i];   // assigning quaternion
+  }
+  std::vector<double> fe(9);
+  _cpmodel->Fe(s_np1, h_np1, T_np1, &fe[0]);
+  _Fe[_qp] = RankTwoTensor(fe);
 }

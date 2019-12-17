@@ -16,15 +16,6 @@ class ComputeNEMLCPOutput: public ComputeNEMLStressUpdate
   virtual ~ComputeNEMLCPOutput() {};
 
  protected:
-   neml::SingleCrystalModel *_cpmodel = nullptr;
-
-   MaterialProperty<std::vector<Real>> & _orientation_q;
-   /// object providing the Euler angles
-   const EulerAngleProvider * _euler;
-   /// grain id
-   unsigned int _grain;
-   unsigned int _given = 1;
-
    virtual void initQpStatefulProperties() override;
 
    virtual void stressUpdate(
@@ -36,7 +27,19 @@ class ComputeNEMLCPOutput: public ComputeNEMLStressUpdate
        double * const A_np1, double * const B_np1,
        double & u_np1, double u_n, double & p_np1, double p_n);
 
-   void getCPOutput(double *const h_np1);
+   void getCPOutput(double *const h_np1, double * const s_np1, double T_np1);
+
+ protected:
+   neml::SingleCrystalModel *_cpmodel = nullptr;
+
+   MaterialProperty<std::vector<Real>> & _orientation_q;
+   MaterialProperty<RankTwoTensor> & _Fe;
+
+   /// object providing the Euler angles
+   const EulerAngleProvider * _euler;
+   /// grain id
+   unsigned int _grain;
+   unsigned int _given = 1;
 };
 
 
