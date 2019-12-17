@@ -50,12 +50,6 @@ ComputeNEMLCPOutput::initQpStatefulProperties()
       _cpmodel->set_active_orientation(&_hist[_qp].front(),e);
   }
   
-  _orientation_q[_qp].resize(4);
-  neml::Orientation Q = _cpmodel->get_active_orientation(&(_hist[_qp].front()));
-  for (unsigned int i = 0; i < 4; i++) {
-    _orientation_q[_qp][i] = Q.quat()[i];
-  }
-
   _Fe[_qp] = RankTwoTensor::Identity();
 }
 
@@ -82,8 +76,8 @@ void
 ComputeNEMLCPOutput::getCPOutput(double * const h_np1, double * const s_np1, double T_np1)
 {
 
-  _orientation_q[_qp].resize(4);
   neml::Orientation Q = _cpmodel->get_active_orientation(h_np1);
+  _orientation_q[_qp].resize(4);
   for (unsigned int i = 0; i < 4; i++){
     _orientation_q[_qp][i] = Q.quat()[i];   // assigning quaternion
   }
