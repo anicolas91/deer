@@ -40,6 +40,10 @@ class ComputeNEMLCPOutput: public ComputeNEMLStressUpdate
    /// grain id
    unsigned int _grain;
    unsigned int _given = 1;
+
+   /// Stuff for the nye tensor
+   unsigned int _num_nye;
+   std::vector<const VariableValue*> _nye_comps;
 };
 
 

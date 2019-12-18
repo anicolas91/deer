@@ -43,7 +43,7 @@ CurlTensorAux::computeValue()
 {
   auto imap = [](unsigned int i, unsigned int j) { return i*3+j; };
   auto lciv = [](unsigned int i, unsigned int j, unsigned int k) {
-    return (i-j)*(j-k)*(k-1)/2;};
+    return (i-j)*(j-k)*(k-i)/2;};
   
   Real val = 0.0;
   for (unsigned int i = 0; i < 3; i++) {

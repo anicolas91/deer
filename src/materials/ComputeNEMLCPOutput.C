@@ -10,6 +10,7 @@ validParams<ComputeNEMLCPOutput>()
   params.addParam<UserObjectName>("euler_angle_provider","dummy"
                                         "Name of Euler angle provider user object");
   params.addParam<unsigned int>("grain_id", 0,"ID of the grain for this material");
+  params.addCoupledVar("nye_tensor", "Each component of the Nye tensor");
   return params;
 }
 
@@ -18,18 +19,34 @@ ComputeNEMLCPOutput::ComputeNEMLCPOutput(const InputParameters & parameters)
     _orientation_q(declareProperty<std::vector<Real>>("orientation_q")),
     _Fe(declareProperty<RankTwoTensor>("Fe")),
     _euler(parameters.isParamSetByUser("euler_angle_provider") ? &getUserObject<EulerAngleProvider>("euler_angle_provider") : nullptr), // May be making it a required parameter
-    _grain(getParam<unsigned int>("grain_id"))
+    _grain(getParam<unsigned int>("grain_id")),
+    _num_nye(coupledComponents("nye_tensor")),
+    _nye_comps(9)
 {
   _cpmodel = static_cast<neml::SingleCrystalModel *>(_model.get());
 
-  if(!parameters.isParamSetByUser("grain_id")){
+  if (!parameters.isParamSetByUser("grain_id")){
     mooseWarning("grain id's not provided, block id will be used for the cp");
     _given = 0;
    }
 
-  if(_euler == nullptr ) {
+  if (_euler == nullptr ) {
     mooseWarning("no euler angle file is given for a single default orientation will be used !!!!");
    }
+
+  if (_num_nye == 0) {
+    for (size_t i = 0; i < 9; i++) {
+      _nye_comps[i] = &_zero;
+    }
+  }
+  else if (_num_nye == 9) {
+    for (size_t i = 0; i < 9; i++) {
+      _nye_comps[i] = &coupledValue("nye_tensor", i);
+    }
+  }
+  else {
+    throw MooseException("Invalid number of Nye tensor components provided!");
+  }
  }
 
 // Assigning Euler angles from file
@@ -49,7 +66,7 @@ ComputeNEMLCPOutput::initQpStatefulProperties()
       neml::Orientation e = neml::Orientation::createEulerAngles(angles.phi1, angles.Phi, angles.phi2,"degrees");
       _cpmodel->set_active_orientation(&_hist[_qp].front(),e);
   }
-  
+
   _Fe[_qp] = RankTwoTensor::Identity();
 }
 
@@ -63,7 +80,6 @@ ComputeNEMLCPOutput::stressUpdate(
       double * const A_np1, double * const B_np1,
       double & u_np1, double u_n, double & p_np1, double p_n)
 {
-
   ComputeNEMLStressUpdate::stressUpdate(e_np1, e_n, w_np1, w_n, T_np1, T_n, t_np1, t_n,
                s_np1, s_n, h_np1, h_n, A_np1, B_np1, u_np1, u_n,
                p_np1, p_n);
@@ -75,13 +91,21 @@ ComputeNEMLCPOutput::stressUpdate(
 void
 ComputeNEMLCPOutput::getCPOutput(double * const h_np1, double * const s_np1, double T_np1)
 {
-
   neml::Orientation Q = _cpmodel->get_active_orientation(h_np1);
   _orientation_q[_qp].resize(4);
   for (unsigned int i = 0; i < 4; i++){
     _orientation_q[_qp][i] = Q.quat()[i];   // assigning quaternion
   }
+
+  // Set Fe
   std::vector<double> fe(9);
   _cpmodel->Fe(s_np1, h_np1, T_np1, &fe[0]);
-  _Fe[_qp] = RankTwoTensor(fe);
+  _Fe[_qp].fillFromInputVector(fe);
+
+  // I guess this fits here?
+  double nye[9];
+  for (size_t i = 0; i < 9; i++) {
+    nye[i] = (*_nye_comps[i])[_qp];
+  }
+  _cpmodel->update_nye(h_np1, nye);
 }
