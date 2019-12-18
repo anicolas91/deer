@@ -26,12 +26,7 @@ ComputeNEMLCPOutput::ComputeNEMLCPOutput(const InputParameters & parameters)
   _cpmodel = static_cast<neml::SingleCrystalModel *>(_model.get());
 
   if (!parameters.isParamSetByUser("grain_id")){
-    mooseWarning("grain id's not provided, block id will be used for the cp");
     _given = 0;
-   }
-
-  if (_euler == nullptr ) {
-    mooseWarning("no euler angle file is given for a single default orientation will be used !!!!");
    }
 
   if (_num_nye == 0) {

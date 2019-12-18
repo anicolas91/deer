@@ -1,0 +1,14 @@
+[Tests]
+  [./no_hardening]
+    type = Exodiff
+    input = 'no_geom_hardening.i'
+    exodiff = 'no_geom_hardening_out.e'
+    requirement = "Reference case for comparison"
+  [../]
+  [./with_hardening]
+    type = Exodiff
+    input = 'geom_hardening.i'
+    exodiff = 'geom_hardening_out.e'
+    requirement = "With geometric hardening switched on -- much harder!"
+  [../]
+[]
