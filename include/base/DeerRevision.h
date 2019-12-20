@@ -2,5 +2,5 @@
 
 #pragma once
 
-#define DEER_REVISION "git commit aa4b2be on 2019-12-18"
-#define DEER_VERSION "aa4b2be"
+#define DEER_REVISION "git commit 9ca0860 on 2019-12-18"
+#define DEER_VERSION "9ca0860"
