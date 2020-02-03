@@ -18,11 +18,16 @@ class NEMLCPAction: public Action
   void _add_full_tensor_variable(std::string name, bool gradient = false);
   void _add_tensor_variable(std::string name, bool gradient = false);
   void _add_scalar_variable(std::string name, bool gradient = false);
-  void _add_curl_full_tensor_aux(std::string invar, std::string outvar);
-  void _add_full_tensor_aux(std::string name);
-  void _add_tensor_aux(std::string name);
-  void _add_scalar_aux(std::string name);
-  void _add_vector_aux(std::string name, size_t index, std::string vname);
+  void _add_curl_full_tensor_aux(std::string invar, std::string outvar,
+                                 std::string when = "timestep_end");
+  void _add_full_tensor_aux(std::string name,
+                            std::string when = "timestep_end");
+  void _add_tensor_aux(std::string name,
+                       std::string when = "timestep_end");
+  void _add_scalar_aux(std::string name,
+                       std::string when = "timestep_end");
+  void _add_vector_aux(std::string name, size_t index, std::string vname,
+                       std::string when = "timestep_end");
 
  private:
   bool _add_orientation_output;

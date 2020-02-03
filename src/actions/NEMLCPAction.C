@@ -59,10 +59,10 @@ void NEMLCPAction::act() {
       }
     }
     if (_add_fe) {
-      _add_full_tensor_aux("Fe");
+      _add_full_tensor_aux("Fe", "nonlinear");
     }
     if (_add_nye) {
-      _add_curl_full_tensor_aux("Fe", "nye");
+      _add_curl_full_tensor_aux("Fe", "nye", "nonlinear");
     }
   }
 }
@@ -98,7 +98,8 @@ void NEMLCPAction::_add_scalar_variable(std::string name, bool gradient) {
   _problem->addAuxVariable(var_type, name, params);
 }
 
-void NEMLCPAction::_add_curl_full_tensor_aux(std::string invar, std::string outvar)
+void NEMLCPAction::_add_curl_full_tensor_aux(std::string invar, std::string outvar,
+                                             std::string when)
 {
   std::vector<VariableName> varnames;
   for (unsigned int i = 0; i < 3; i++) {
@@ -116,11 +117,13 @@ void NEMLCPAction::_add_curl_full_tensor_aux(std::string invar, std::string outv
     params.set<unsigned int>("i") = entry.first.first;
     params.set<unsigned int>("j") = entry.first.second;
 
+    params.set<ExecFlagEnum>("execute_on") = when;
+
     _problem->addAuxKernel("CurlTensorAux", outvar + "_" + entry.second, params);
   }
 }
 
-void NEMLCPAction::_add_full_tensor_aux(std::string name) {
+void NEMLCPAction::_add_full_tensor_aux(std::string name, std::string when) {
   for (auto entry : full_tensor_map_cp) {
     auto params = _factory.getValidParams("RankTwoAux");
 
@@ -129,11 +132,13 @@ void NEMLCPAction::_add_full_tensor_aux(std::string name) {
     params.set<unsigned int>("index_i") = entry.first.first;
     params.set<unsigned int>("index_j") = entry.first.second;
 
+    params.set<ExecFlagEnum>("execute_on") = when;
+
     _problem->addAuxKernel("RankTwoAux", name + "_" + entry.second, params);
   }
 }
 
-void NEMLCPAction::_add_tensor_aux(std::string name) {
+void NEMLCPAction::_add_tensor_aux(std::string name, std::string when) {
   for (auto entry : tensor_map_cp) {
     auto params = _factory.getValidParams("RankTwoAux");
 
@@ -142,27 +147,33 @@ void NEMLCPAction::_add_tensor_aux(std::string name) {
     params.set<unsigned int>("index_i") = entry.first.first;
     params.set<unsigned int>("index_j") = entry.first.second;
 
+    params.set<ExecFlagEnum>("execute_on") = when;
+
     _problem->addAuxKernel("RankTwoAux", name + "_" + entry.second, params);
   }
 }
 
-void NEMLCPAction::_add_scalar_aux(std::string name) {
+void NEMLCPAction::_add_scalar_aux(std::string name, std::string when) {
   auto params = _factory.getValidParams("MaterialRealAux");
 
   params.set<MaterialPropertyName>("property") = name;
   params.set<AuxVariableName>("variable") = name;
 
+  params.set<ExecFlagEnum>("execute_on") = when;
+
   _problem->addAuxKernel("MaterialRealAux", name, params);
 }
 
 void NEMLCPAction::_add_vector_aux(std::string name, size_t index,
-                                   std::string vname)
+                                   std::string vname, std::string when)
 {
   auto params = _factory.getValidParams("MaterialStdVectorAux");
 
   params.set<MaterialPropertyName>("property") = name;
   params.set<unsigned int>("index") = index;
   params.set<AuxVariableName>("variable") = vname;
+
+  params.set<ExecFlagEnum>("execute_on") = when;
 
   _problem->addAuxKernel("MaterialStdVectorAux", "q"+std::to_string(index), 
                          params);
