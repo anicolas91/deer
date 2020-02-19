@@ -1,0 +1,8 @@
+[Tests]
+  [./RVEStrain_2element]
+    type = Exodiff
+    input = 'CZMRVEStrainAction_2element.i'
+    exodiff = 'CZMRVEStrainAction_2element_out.e'
+    requirement = "check the CZMRVEStrainAction works properly"
+  [../]
+[]

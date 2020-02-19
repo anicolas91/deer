@@ -27,6 +27,7 @@ DeerApp::~DeerApp() {}
 static void associateSyntaxInner(Syntax &syntax,
                                  ActionFactory & /*action_factory*/) {
   registerSyntax("NEMLMechanicsAction", "NEMLMechanics");
+  registerSyntax("CZMRVEStrainAction", "CZMRVEStrain");
 }
 
 void DeerApp::registerApps() { registerApp(DeerApp); }
