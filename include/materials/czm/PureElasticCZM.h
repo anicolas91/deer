@@ -11,7 +11,6 @@
 
 #include "CZMMaterialBase.h"
 
-class PureElasticCZM;
 /**
  * Implementation of the non-stateful exponential traction separation law
  * proposed by Salehani, Mohsen Khajeh and Irani, Nilgoon 2018
