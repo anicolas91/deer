@@ -20,6 +20,7 @@
 #include "GBCavitationNLSystem.h"
 #include "scaleFactors.h"
 
+#include "GBCavitationBoundaryPropertyUO.h"
 #include "InterfaceQpMaterialPropertyRankTwoScalarUO.h"
 
 /* DATA STRUCTURE TO PASS QUANTITIES TO PETSC*/
@@ -47,27 +48,83 @@ public:
   ~GBCavitation();
 
 protected:
+  const GBCavitationBoundaryPropertyUO *_GBCavitationBoundaryPropertyUO;
   /* INTERFACE PARAMETERS */
-  const Real _a0;                  /*initial cavity half radius*/
-  const Real _b0;                  /*initial cavity half spacing*/
-  const Real _b_saturation;        /*saturation cavity half spacing*/
-  const Real _NI;                  /*number of intial cavity*/
-  const Real _FN;                  /*cavitration rate*/
-  const Real _S_thr;               /*thresould value for cavitation to occur*/
-  const Real _interface_thickness; /*interface Young modulus*/
-  const Real _E_interface;         /*interface Young modulus*/
-  const Real _E_penalty;           /*incase of copenetration*/
-  const Real _G_interface;         /*interface shear modulus*/
-  const Real _beta_exponent;       /*Traction exponent*/
-  const Real _D_gb;                /*gran boundary diffusion coefficient*/
-  const Real _n_exponent;          /*power law creep exponent*/
-  const Real _alpha_n;             /*3/(2*_n_exponent))*/
-  const Real _psi_angle;   /*equilibrium cavity tip half-angle [degree]*/
-  const Real _h;           /*function of psi angle*/
-  const Real _sigma_0;     /*traction normalization parameter*/
-  const Real _eta_sliding; /*interface sliding viscosity*/
+  // const Real _a0;                  /*initial cavity half radius*/
+  // const Real _b0;                  /*initial cavity half spacing*/
+  // const Real _b_saturation;        /*saturation cavity half spacing*/
+  // const Real _NI;                  /*number of intial cavity*/
+  // const Real _FN;                  /*cavitration rate*/
+  // const Real _S_thr;               /*thresould value for cavitation to
+  // occur*/ const Real _interface_thickness; /*interface Young modulus*/ const
+  // Real _E_interface;         /*interface Young modulus*/
+  const Real _E_penalty; /*incase of copenetration*/
+  // const Real _G_interface;
+  // /*interface shear modulus*/
+  const Real _beta_exponent; /*Traction exponent*/
+  // const Real _D_gb;          /*gran boundary diffusion
+  // coefficient*/
+  const Real _n_exponent; /*power law creep exponent*/
+  const Real _alpha_n;    /*3/(2*_n_exponent))*/
+  // const Real _psi_angle;   /*equilibrium cavity tip half-angle [degree]*/
+  // const Real _h;           /*function of psi angle*/
+  // const Real _sigma_0;     /*traction normalization parameter*/
+  // const Real _eta_sliding; /*interface sliding viscosity*/
 
-  GBCavitationNLSystem _GBNLsystem;
+  void getInitPropertyValuesFromParams(Real &FN_NI, Real &Nmax_NI, Real &a0,
+                                       Real &b0, Real &psi, Real &D_gb,
+                                       Real &E_interface, Real &G_interface,
+                                       Real &eta_sliding, Real &sigma_0,
+                                       Real &S_thr) const;
+
+  void getInitPropertyValuesFromUO(Real &FN_NI, Real &Nmax_NI, Real &a0,
+                                   Real &b0, Real &psi, Real &D_gb,
+                                   Real &E_interface, Real &G_interface,
+                                   Real &eta_sliding, Real &sigma_0,
+                                   Real &S_thr) const;
+
+  void InitGBCavitationParamsAndProperties();
+
+  MaterialProperty<Real> &_a0;
+  const MaterialProperty<Real> &_a0_old;
+
+  MaterialProperty<Real> &_b0;
+  const MaterialProperty<Real> &_b0_old;
+
+  MaterialProperty<Real> &_NI;
+  const MaterialProperty<Real> &_NI_old;
+
+  MaterialProperty<Real> &_FN;
+  const MaterialProperty<Real> &_FN_old;
+
+  MaterialProperty<Real> &_D_gb;
+  const MaterialProperty<Real> &_D_gb_old;
+
+  MaterialProperty<Real> &_b_saturation;
+  const MaterialProperty<Real> &_b_saturation_old;
+
+  MaterialProperty<Real> &_E_interface;
+  const MaterialProperty<Real> &_E_interface_old;
+
+  MaterialProperty<Real> &_G_interface;
+  const MaterialProperty<Real> &_G_interface_old;
+
+  MaterialProperty<Real> &_eta_sliding;
+  const MaterialProperty<Real> &_eta_sliding_old;
+
+  MaterialProperty<Real> &_interface_thickness;
+  const MaterialProperty<Real> &_interface_thickness_old;
+
+  MaterialProperty<Real> &_sigma_0;
+  const MaterialProperty<Real> &_sigma_0_old;
+
+  MaterialProperty<Real> &_S_thr;
+  const MaterialProperty<Real> &_S_thr_old;
+
+  MaterialProperty<Real> &_h;
+  const MaterialProperty<Real> &_h_old;
+
+  // GBCavitationNLSystem _GBNLsystem;
 
   /* helper fucntion to translate petsc variable to interface inputs*/
   scaleFactors _residualScaleFactors;
@@ -125,7 +182,6 @@ protected:
   MaterialProperty<Real> &_accumulated_eq_strain;
   const MaterialProperty<Real> &_accumulated_eq_strain_old;
   MaterialProperty<Real> &_interface_triaxiality;
-
   /* FAILURE RELATED PROPERTIES */
   MaterialProperty<bool> &_elem_failed;
   const MaterialProperty<bool> &_elem_failed_old;
@@ -177,43 +233,49 @@ protected:
   const bool _use_LM;
   const int _n_equation;
   const bool _give_up_qp;
-  bool substepFun(nlFunBase::io_maps_type &x_sol_real,
-                  bool &fail_while_substep);
+  bool substepFun(nlFunBase::io_maps_type &x_sol_real, bool &fail_while_substep,
+                  GBCavitationNLSystem &GBNLsystem);
   void prepareSolverContext(const Real &substep_dt,
                             nlFunBase::io_maps_type &x_old,
-                            nlFunBase::io_maps_type &params);
+                            nlFunBase::io_maps_type &NL_params,
+                            GBCavitationNLSystem &GBNLsystem);
   nlFunBase::io_maps_type prepareParamsSubstep(const Real &time_last_solution,
                                                const Real &current_dt);
   void initSnesGuess(const nlFunBase::io_maps_type &x_Real,
-                     const nlFunBase::io_maps_type &x_Real_old);
+                     const nlFunBase::io_maps_type &x_Real_old,
+                     const GBCavitationNLSystem &GBNLsystem);
   void updateLastSolution(nlFunBase::io_maps_type &x_last_solution) const;
-  bool checkCavitationConvergence(const nlFunBase::io_maps_type &params,
+  bool checkCavitationConvergence(const nlFunBase::io_maps_type &NL_params,
                                   const nlFunBase::io_maps_type &x_old,
                                   const Real &dt_local,
-                                  nlFunBase::io_maps_type &x_sol_real);
+                                  nlFunBase::io_maps_type &x_sol_real,
+                                  const GBCavitationNLSystem &GBNLsystem);
   nlFunBase::io_maps_type copyNLsolutionToMap() const;
 
   void updatedStateVarFromRealSolution(const nlFunBase::io_maps_type &x_Real,
                                        const Real &t_curr);
 
   nlFunBase::io_maps_type
-  getRealSolutionFromNLSolution(const nlFunBase::io_maps_type &params,
+  getRealSolutionFromNLSolution(const nlFunBase::io_maps_type &NL_params,
                                 const nlFunBase::io_maps_type &x_old,
-                                const Real &dt_local) const;
+                                const Real &dt_local,
+                                const GBCavitationNLSystem &GBNLsystem) const;
 
   nlFunBase::io_maps_type xoldFromOld() const;
 
   void decoupeldShearTraction(const Real &dt);
-  void update_Dtn_dUN(const nlFunBase::io_maps_type &params,
+  void update_Dtn_dUN(const nlFunBase::io_maps_type &NL_params,
                       const nlFunBase::io_maps_type &x_old,
-                      const Real &dt_local) {
+                      const Real &dt_local,
+                      const GBCavitationNLSystem &GBNLsystem) {
     nlFunBase::io_maps_type xNL = copyNLsolutionToMap();
 
-    DenseMatrix<Real> Jac = _GBNLsystem.computeSystemVarJacobian(
-        xNL, params, x_old, dt_local, /*wrt_xNL=*/false);
+    DenseMatrix<Real> Jac =
+        GBNLsystem.computeSystemVarJacobian(xNL, NL_params, x_old, dt_local,
+                                            /*wrt_xNL=*/false);
 
     const std::map<std::string, DenseVector<Real>> dx_dparam =
-        _GBNLsystem.computeSystemParamGradient(xNL, params, x_old, dt_local);
+        GBNLsystem.computeSystemParamGradient(xNL, NL_params, x_old, dt_local);
     for (unsigned int i = 0; i < 3; i++)
       for (unsigned int j = 0; j < 3; j++) {
         Jac(i, j) = -Jac(i, j);
@@ -301,14 +363,16 @@ protected:
     // _decay_exhausted[_qp] = false;
     if (_D[_qp] >= _D_thr) {
       Moose::out << "element " << _current_elem->id() << " qp " << _qp
-                 << " exceeded maximum Damage, marked as failed\n";
+                 << " exceeded maximum Damage, marked "
+                    "as failed\n";
       _elem_failed[_qp] = true;
     }
 
     if (_traction[_qp](0) >= _max_allowed_opening_traction) {
       _elem_failed[_qp] = true;
       Moose::out << "element " << _current_elem->id() << " qp " << _qp
-                 << " exceeded maximum Traction, marked as failed\n";
+                 << " exceeded maximum Traction, "
+                    "marked as failed\n";
     }
 
     for (unsigned int i = 0; i < 3; i++) {

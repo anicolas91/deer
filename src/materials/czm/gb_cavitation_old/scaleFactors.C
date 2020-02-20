@@ -22,8 +22,8 @@ scaleFactors::computeVarScaleFactor(const io_maps_type &x_old) const {
     if (it.second == 0)
       it.second = 1;
     if (it.first == "Tn")
-      if (it.second < 10)
-        it.second == 10;
+      if (std::abs(it.second) < 10.)
+        it.second = 1.;
   }
   return scale_factor;
 }
