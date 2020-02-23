@@ -10,7 +10,6 @@
 #pragma once
 
 #include "Material.h"
-// #include "MaterialProperty.h"
 
 /**
  * Interface material calculates a variable's jump value across an interface
