@@ -43,9 +43,13 @@ InputParameters NEMLMechanicsAction::validParams() {
       "Names of the eigenstrains");
 
   params.addParam<std::vector<SubdomainName>>(
-      "block", "The list of subdomain names where neml mehcanisc must be used, "
-               "default all blocks. Helpful when different physiscs and "
+      "block", "The list of subdomain names where this kernel will be used, "
+               "default all blocks. Helpful when different physics and "
                "kernels are required on different blocks.");
+
+  params.addParam<std::vector<AuxVariableName>>("save_in", 
+                                                "The displacement residuals");
+
   return params;
 }
 
@@ -60,7 +64,13 @@ NEMLMechanicsAction::NEMLMechanicsAction(const InputParameters &params)
           getParam<std::vector<MaterialPropertyName>>("eigenstrains")),
       _block(params.isParamSetByUser("block")
                  ? getParam<std::vector<SubdomainName>>("block")
-                 : std::vector<SubdomainName>(0)) {}
+                 : std::vector<SubdomainName>(0)) ,
+      _save_in(getParam<std::vector<AuxVariableName>>("save_in"))
+{
+  if ((_save_in.size() != 0) && (_save_in.size() != _ndisp)) {
+    mooseError("Number of save_in variables should equal the number of displacements");
+  }
+}
 
 void NEMLMechanicsAction::act() {
   if (_current_task == "add_variable") {
@@ -99,6 +109,9 @@ void NEMLMechanicsAction::act() {
       params.set<bool>("use_displaced_mesh") = _kin_mapper[_kinematics];
       if (_block.size() > 0)
         params.set<std::vector<SubdomainName>>("block") = _block;
+
+      if (_save_in.size() == _ndisp)
+        params.set<std::vector<AuxVariableName>>("save_in") = {_save_in[i]};
 
       std::string name = "SD_" + Moose::stringify(i);
 

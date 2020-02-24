@@ -28,4 +28,6 @@ protected:
 
   std::vector<MaterialPropertyName> _eigenstrains;
   std::vector<SubdomainName> _block;
+
+  std::vector<AuxVariableName> _save_in;
 };
