@@ -22,6 +22,7 @@ public:
   CZMMaterialLargeDefBase(const InputParameters &parameters);
 
 protected:
+  virtual void initialSetup() override;
   virtual RealVectorValue computeTraction() override{};
 
   virtual RankTwoTensor computeTractionDerivatives() override{};
@@ -29,53 +30,77 @@ protected:
   virtual void initQpStatefulProperties() override;
   virtual void computeQpProperties() override;
 
-  RankTwoTensor computeF(std::vector<const VariableGradient *> g_disp) const;
+  /// the coupled displacement and neighbor displacement values
+  ///@{
+  std::vector<const VariableValue *> _disp_old;
+  std::vector<const VariableValue *> _disp_neighbor_old;
+  ///@}
+
+  MaterialProperty<RealVectorValue> &_displacement_jump_global_old;
+
+  MaterialProperty<RealVectorValue> &_traction_avg;
+  MaterialProperty<RealVectorValue> &_traction_global_avg;
+  MaterialProperty<RealVectorValue> &_traction_global_neighbor;
+
+  const MaterialProperty<RealVectorValue> &_traction_global_avg_old;
+
+  /// the traction's derivatives wrt the displacement jump in global and local
+  /// coordinates
+  ///@{
+  MaterialProperty<RankTwoTensor> &_traction_derivatives_avg;
+  MaterialProperty<RankTwoTensor> &_traction_derivatives_global_avg;
+
+  ///@}
+
+  /// the traction's derivatives wrt the displacement jump in global and local
+  /// coordinates for each surface
+  ///@{
+  MaterialProperty<RankTwoTensor> &_traction_derivatives_global_neighbor;
+  ///@}
 
   std::vector<const VariableGradient *> _grad_disp;
   std::vector<const VariableGradient *> _grad_disp_old;
-
   std::vector<const VariableGradient *> _grad_disp_neighbor;
   std::vector<const VariableGradient *> _grad_disp_neighbor_old;
 
-  MaterialProperty<RankTwoTensor> &_vorticity_inc;
   MaterialProperty<RankTwoTensor> &_def_grad;
-  const MaterialProperty<RankTwoTensor> &_def_grad_old;
-  MaterialProperty<RankTwoTensor> &_df;
-
-  MaterialProperty<RankTwoTensor> &_vorticity_inc_neighbor;
+  MaterialProperty<RankTwoTensor> &_def_grad_old;
   MaterialProperty<RankTwoTensor> &_def_grad_neighbor;
-  const MaterialProperty<RankTwoTensor> &_def_grad_neighbor_old;
-  MaterialProperty<RankTwoTensor> &_df_neighbor;
-
-  MaterialProperty<RankTwoTensor> &_vorticity_inc_avg;
+  MaterialProperty<RankTwoTensor> &_def_grad_neighbor_old;
   MaterialProperty<RankTwoTensor> &_def_grad_avg;
-  const MaterialProperty<RankTwoTensor> &_def_grad_avg_old;
-  MaterialProperty<RankTwoTensor> &_df_avg;
+  MaterialProperty<RankTwoTensor> &_def_grad_avg_old;
 
-  // MaterialProperty<RankTwoTensor> &_F;
-  // MaterialProperty<RankTwoTensor> &_F_neighbor;
-  // MaterialProperty<RankTwoTensor> &_F_old;
-  // MaterialProperty<RankTwoTensor> &_F_neighbor_old;
-  // MaterialProperty<RankTwoTensor> &_F_avg;
-  // MaterialProperty<RankTwoTensor> &_F_avg_old;
-
-  // MaterialProperty<RealVectorValue> &_n;
-  // MaterialProperty<RealVectorValue> &_n_neighbor;
+  MaterialProperty<RealVectorValue> &_n;
+  MaterialProperty<RealVectorValue> &_n_neighbor;
   MaterialProperty<RealVectorValue> &_n_avg;
-  // MaterialProperty<RealVectorValue> &_n_old;
-  // MaterialProperty<RealVectorValue> &_n_neighbor_old;
-  const MaterialProperty<RealVectorValue> &_n_avg_old;
+  MaterialProperty<RealVectorValue> &_n_old;
+  MaterialProperty<RealVectorValue> &_n_neighbor_old;
+  MaterialProperty<RealVectorValue> &_n_avg_old;
 
-  MaterialProperty<RealVectorValue> &_n_zero;
-  MaterialProperty<RealVectorValue> &_n_zero_neighbor;
-  const MaterialProperty<RealVectorValue> &_n_zero_old;
-  const MaterialProperty<RealVectorValue> &_n_zero_neighbor_old;
-  // const RankTwoTensor _I(RankTwoTensor::initIdentity());
+  MaterialProperty<Real> &_dadA;
+  MaterialProperty<Real> &_dadA_neighbor;
+  MaterialProperty<Real> &_dadA_avg;
+  MaterialProperty<Real> &_dadA_old;
+  MaterialProperty<Real> &_dadA_neighbor_old;
+  MaterialProperty<Real> &_dadA_avg_old;
+
+  MaterialProperty<Real> &_neighbor_area;
+  std::vector<const VariableGradient *> _grad_disp_neighbor_current;
+  MaterialProperty<RankTwoTensor> &_def_grad_neighbor_current;
+  // MaterialProperty<RankTwoTensor> &_linear_rot;
+  // const MaterialProperty<RankTwoTensor> &_linear_rot_old;
+  // MaterialProperty<RankTwoTensor> &_linear_rot_neighbor;
+  // const MaterialProperty<RankTwoTensor> &_linear_rot_neighbor_old;
+  // MaterialProperty<RankTwoTensor> &_linear_rot_avg;
+  // const MaterialProperty<RankTwoTensor> &_linear_rot_avg_old;
 
   const bool _ld;
+  const Real _K;
 
-  void update_L_df_vorticity(const RankTwoTensor &def_grad,
-                             const RankTwoTensor &def_grad_old,
-                             RankTwoTensor &L, RankTwoTensor &df,
-                             RankTwoTensor &vorticity_inc);
+  // void update_L_df_vorticity(const RankTwoTensor &def_grad,
+  //                            const RankTwoTensor &def_grad_old,
+  //                            RankTwoTensor &L, RankTwoTensor &df,
+  //                            RankTwoTensor &vorticity_inc);
+
+  void computeRotation(const RankTwoTensor &F, RankTwoTensor &R) const;
 };

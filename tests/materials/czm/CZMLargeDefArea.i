@@ -21,17 +21,23 @@
     type = BreakMeshByBlockGenerator
     input = new_block
   []
-  [./rotating_nodes]
+  [./top_nodes_left]
     input = split
     type = ExtraNodesetGenerator
-    nodes = '8 9 10 11 12 15'
-    new_boundary = rotating_nodes
+    nodes = '8 11 12 15'
+    new_boundary = top_nodes_left
   []
-  [./fixed_nodes]
-    input = rotating_nodes
+  [./top_nodes_right]
+    input = top_nodes_left
     type = ExtraNodesetGenerator
-    nodes = '0 1 2 3 4 5 6 7 13 14'
-    new_boundary = fixed_nodes
+    nodes = '9 10 13 14'
+    new_boundary = top_nodes_right
+  []
+  [./bottom_nodes]
+    input = top_nodes_right
+    type = ExtraNodesetGenerator
+    nodes = '0 1 2 3 4 5 6 7'
+    new_boundary = bottom_nodes
   []
 []
 
@@ -69,30 +75,6 @@
     order = CONSTANT
   []
   [./Navg_z]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Tavg_x]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Tavg_y]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Tavg_z]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Tmaster_x]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Tmaster_y]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Tmaster_z]
     family = MONOMIAL
     order = CONSTANT
   []
@@ -174,54 +156,6 @@
     execute_on = 'TIMESTEP_END'
     variable = Navg_z
   [../]
-  [./aux_Tavg_x]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global_avg
-    component = 0
-    execute_on = 'TIMESTEP_END'
-    variable = Tavg_x
-  [../]
-  [./aux_Tavg_y]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global_avg
-    component = 1
-    execute_on = 'TIMESTEP_END'
-    variable = Tavg_y
-  [../]
-  [./aux_Tavg_z]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global_avg
-    component = 2
-    execute_on = 'TIMESTEP_END'
-    variable = Tavg_z
-  [../]
-  [./aux_Tmaster_x]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global
-    component = 0
-    execute_on = 'TIMESTEP_END'
-    variable = Tmaster_x
-  [../]
-  [./aux_Tmaster_y]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global
-    component = 1
-    execute_on = 'TIMESTEP_END'
-    variable = Tmaster_y
-  [../]
-  [./aux_Tmaster_z]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global
-    component = 2
-    execute_on = 'TIMESTEP_END'
-    variable = Tmaster_z
-  [../]
 []
 
 
@@ -277,63 +211,45 @@
   nl_max_its = 15
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-6
-  dtmin = 0.05
-  dtmax = 0.05
-  end_time = 2.05
+  dtmin = 1
+  dtmax = 1
+  end_time = 2.5
 []
 
 [Functions]
-  [./angles]
-    type = PiecewiseLinear
-    x = '0 1 2'
-    y = '0 0.7853981 1.5707963'
-  [../]
 
   [./move_x]
     type = ParsedFunction
-    value = '(x*cos(theta)+z*sin(theta))-x'
-    vars = 'theta'
-    vals = 'angles'
+    value = 0.1*t
   [../]
 
-  [./move_z]
-    type = ParsedFunction
-    value = '(-x*sin(theta)+z*cos(theta))-z'
-    vars = 'theta'
-    vals = 'angles'
-  [../]
 []
 
 
 [BCs]
-  [./x_rot]
+  [./x_move]
     type = FunctionDirichletBC
-    boundary = 'rotating_nodes'
+    boundary = 'top_nodes_right'
     variable = disp_x
     function = move_x
   [../]
-  [./z_rot]
-    type = FunctionDirichletBC
-    boundary = 'rotating_nodes'
-    variable = disp_z
-    function = move_z
-  [../]
+
 
   [./x_fix]
     type = DirichletBC
-    boundary = fixed_nodes
+    boundary = 'bottom_nodes top_nodes_left'
     variable = disp_x
     value = 0.0
   [../]
   [./y_fix]
     type = DirichletBC
-    boundary = 'fixed_nodes rotating_nodes'
+    boundary = 'bottom_nodes top_nodes_left top_nodes_right '
     variable = disp_y
     value = 0.0
   [../]
   [./z_fix]
     type = DirichletBC
-    boundary = fixed_nodes
+    boundary = 'bottom_nodes top_nodes_left top_nodes_right'
     variable = disp_z
     value = 0.0
   [../]
@@ -343,5 +259,5 @@
 
 [Outputs]
   exodus = true
-  sync_times = '0 0.5 1 1.5 2 2.05'
+  sync_times = '0 0.5 1 1.5 2'
 []

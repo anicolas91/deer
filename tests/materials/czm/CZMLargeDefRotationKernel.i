@@ -72,30 +72,6 @@
     family = MONOMIAL
     order = CONSTANT
   []
-  [./Tavg_x]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Tavg_y]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Tavg_z]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Tmaster_x]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Tmaster_y]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Tmaster_z]
-    family = MONOMIAL
-    order = CONSTANT
-  []
 []
 
 
@@ -174,54 +150,6 @@
     execute_on = 'TIMESTEP_END'
     variable = Navg_z
   [../]
-  [./aux_Tavg_x]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global_avg
-    component = 0
-    execute_on = 'TIMESTEP_END'
-    variable = Tavg_x
-  [../]
-  [./aux_Tavg_y]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global_avg
-    component = 1
-    execute_on = 'TIMESTEP_END'
-    variable = Tavg_y
-  [../]
-  [./aux_Tavg_z]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global_avg
-    component = 2
-    execute_on = 'TIMESTEP_END'
-    variable = Tavg_z
-  [../]
-  [./aux_Tmaster_x]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global
-    component = 0
-    execute_on = 'TIMESTEP_END'
-    variable = Tmaster_x
-  [../]
-  [./aux_Tmaster_y]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global
-    component = 1
-    execute_on = 'TIMESTEP_END'
-    variable = Tmaster_y
-  [../]
-  [./aux_Tmaster_z]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global
-    component = 2
-    execute_on = 'TIMESTEP_END'
-    variable = Tmaster_z
-  [../]
 []
 
 
@@ -237,6 +165,18 @@
 #     boundary = 'interface'
 #     displacements = 'disp_x disp_y disp_z'
 #   [../]
+# []
+
+# [InterfaceKernels]
+#   [./x]
+#     type = CZMInterfaceKernelLD
+#     component = 0
+#     displacements = 'disp_x disp_y disp_z'
+#     use_displaced_mesh = true
+#     variable = disp_x
+#     neighbor_var = disp_x
+#     boundary = 'interface'
+#   []
 # []
 
 [Materials]

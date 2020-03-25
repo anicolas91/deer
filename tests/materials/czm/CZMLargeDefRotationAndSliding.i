@@ -24,13 +24,13 @@
   [./rotating_nodes]
     input = split
     type = ExtraNodesetGenerator
-    nodes = '8 9 10 11 12 15'
+    nodes = '8 9 10 11 12 13 14 15'
     new_boundary = rotating_nodes
   []
   [./fixed_nodes]
     input = rotating_nodes
     type = ExtraNodesetGenerator
-    nodes = '0 1 2 3 4 5 6 7 13 14'
+    nodes = '0 1 2 3 4 5 6 7 '
     new_boundary = fixed_nodes
   []
 []
@@ -251,6 +251,7 @@
     displacements = 'disp_x disp_y disp_z'
     boundary = 'interface'
     large_kinematics = true
+    stagger_kinemtics = false
     # E = 1e2
     # G = 1e2
     # interface_thickness = 1
@@ -279,26 +280,32 @@
   nl_abs_tol = 1e-6
   dtmin = 0.05
   dtmax = 0.05
-  end_time = 2.05
+  end_time = 3
 []
 
 [Functions]
   [./angles]
     type = PiecewiseLinear
-    x = '0 1 2'
-    y = '0 0.7853981 1.5707963'
+    x = '0 1 2 3'
+    y = '0 0.7853981 1.5707963 1.5707963'
+  [../]
+
+  [./dx]
+    type = PiecewiseLinear
+    x = '0 2.05 3'
+    y = '0    0 1'
   [../]
 
   [./move_x]
     type = ParsedFunction
-    value = '(x*cos(theta)+z*sin(theta))-x'
-    vars = 'theta'
-    vals = 'angles'
+    value = 'Dx + ((x)*cos(theta)+z*sin(theta))-(x)'
+    vars = 'theta Dx'
+    vals = 'angles dx'
   [../]
 
   [./move_z]
     type = ParsedFunction
-    value = '(-x*sin(theta)+z*cos(theta))-z'
+    value = '(-(x)*sin(theta)+z*cos(theta))-z'
     vars = 'theta'
     vals = 'angles'
   [../]
@@ -343,5 +350,5 @@
 
 [Outputs]
   exodus = true
-  sync_times = '0 0.5 1 1.5 2 2.05'
+  sync_times = '0 0.5 1 1.5 2 2.05 3'
 []
