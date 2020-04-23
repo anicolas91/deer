@@ -36,18 +36,6 @@
 []
 
 [AuxVariables]
-  [./Nneighbor_x]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Nneighbor_y]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Nneighbor_z]
-    family = MONOMIAL
-    order = CONSTANT
-  []
   [./N_x]
     family = MONOMIAL
     order = CONSTANT
@@ -84,76 +72,15 @@
     family = MONOMIAL
     order = CONSTANT
   []
-  [./Tmaster_x]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Tmaster_y]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Tmaster_z]
-    family = MONOMIAL
-    order = CONSTANT
-  []
 []
 
 
 [AuxKernels]
-  [./aux_Nn_x]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = n_neighbor_czm
-    component = 0
-    execute_on = 'TIMESTEP_END'
-    variable = Nneighbor_x
-  [../]
-  [./aux_Nn_y]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = n_neighbor_czm
-    component = 1
-    execute_on = 'TIMESTEP_END'
-    variable = Nneighbor_y
-  [../]
-  [./aux_Nn_z]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = n_neighbor_czm
-    component = 2
-    execute_on = 'TIMESTEP_END'
-    variable = Nneighbor_z
-  [../]
-
-  [./aux_N_x]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = n_master_czm
-    component = 0
-    execute_on = 'TIMESTEP_END'
-    variable = N_x
-  [../]
-  [./aux_N_y]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = n_master_czm
-    component = 1
-    execute_on = 'TIMESTEP_END'
-    variable = N_y
-  [../]
-  [./aux_N_z]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = n_master_czm
-    component = 2
-    execute_on = 'TIMESTEP_END'
-    variable = N_z
-  [../]
 
   [./aux_Navg_x]
     type = MaterialRealVectorValueAux
     boundary = 'interface'
-    property = n_avg_czm
+    property = n_avg
     component = 0
     execute_on = 'TIMESTEP_END'
     variable = Navg_x
@@ -161,7 +88,7 @@
   [./aux_Navg_y]
     type = MaterialRealVectorValueAux
     boundary = 'interface'
-    property = n_avg_czm
+    property = n_avg
     component = 1
     execute_on = 'TIMESTEP_END'
     variable = Navg_y
@@ -169,7 +96,7 @@
   [./aux_Navg_z]
     type = MaterialRealVectorValueAux
     boundary = 'interface'
-    property = n_avg_czm
+    property = n_avg
     component = 2
     execute_on = 'TIMESTEP_END'
     variable = Navg_z
@@ -177,7 +104,7 @@
   [./aux_Tavg_x]
     type = MaterialRealVectorValueAux
     boundary = 'interface'
-    property = traction_global_avg
+    property = traction_global
     component = 0
     execute_on = 'TIMESTEP_END'
     variable = Tavg_x
@@ -185,7 +112,7 @@
   [./aux_Tavg_y]
     type = MaterialRealVectorValueAux
     boundary = 'interface'
-    property = traction_global_avg
+    property = traction_global
     component = 1
     execute_on = 'TIMESTEP_END'
     variable = Tavg_y
@@ -193,34 +120,10 @@
   [./aux_Tavg_z]
     type = MaterialRealVectorValueAux
     boundary = 'interface'
-    property = traction_global_avg
+    property = traction_global
     component = 2
     execute_on = 'TIMESTEP_END'
     variable = Tavg_z
-  [../]
-  [./aux_Tmaster_x]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global
-    component = 0
-    execute_on = 'TIMESTEP_END'
-    variable = Tmaster_x
-  [../]
-  [./aux_Tmaster_y]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global
-    component = 1
-    execute_on = 'TIMESTEP_END'
-    variable = Tmaster_y
-  [../]
-  [./aux_Tmaster_z]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = traction_global
-    component = 2
-    execute_on = 'TIMESTEP_END'
-    variable = Tmaster_z
   [../]
 []
 
@@ -247,12 +150,12 @@
     large_kinematics = true
   [../]
   [./czm]
-    type = CZMMaterialLargeDefBase
+    type = CZMMaterialLD
     displacements = 'disp_x disp_y disp_z'
     boundary = 'interface'
     large_kinematics = true
-    # E = 1e2
-    # G = 1e2
+    E = 1e3
+    G = 1e3
     # interface_thickness = 1
   [../]
 []
@@ -277,9 +180,8 @@
   nl_max_its = 15
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-6
-  dtmin = 0.05
-  dtmax = 0.05
-  end_time = 2.05
+  dt = 0.1
+  end_time = 2
 []
 
 [Functions]
@@ -343,5 +245,5 @@
 
 [Outputs]
   exodus = true
-  sync_times = '0 0.5 1 1.5 2 2.05'
+  # sync_times = ' 2'
 []

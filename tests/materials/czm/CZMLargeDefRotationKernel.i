@@ -36,18 +36,6 @@
 []
 
 [AuxVariables]
-  [./Nneighbor_x]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Nneighbor_y]
-    family = MONOMIAL
-    order = CONSTANT
-  []
-  [./Nneighbor_z]
-    family = MONOMIAL
-    order = CONSTANT
-  []
   [./N_x]
     family = MONOMIAL
     order = CONSTANT
@@ -72,59 +60,46 @@
     family = MONOMIAL
     order = CONSTANT
   []
+  [./Tavg_x]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [./Tavg_y]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [./Tavg_z]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+  [./R_x]
+    family = LAGRANGE
+    order = FIRST
+  []
+  [./R_y]
+    family = LAGRANGE
+    order = FIRST
+  []
+  [./R_z]
+    family = LAGRANGE
+    order = FIRST
+  []
+  [./R_neigh_x]
+    family = LAGRANGE
+    order = FIRST
+  []
+  [./R_neigh_y]
+    family = LAGRANGE
+    order = FIRST
+  []
+  [./R_neigh_z]
+    family = LAGRANGE
+    order = FIRST
+  []
 []
 
 
 [AuxKernels]
-  [./aux_Nn_x]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = n_neighbor_czm
-    component = 0
-    execute_on = 'TIMESTEP_END'
-    variable = Nneighbor_x
-  [../]
-  [./aux_Nn_y]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = n_neighbor_czm
-    component = 1
-    execute_on = 'TIMESTEP_END'
-    variable = Nneighbor_y
-  [../]
-  [./aux_Nn_z]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = n_neighbor_czm
-    component = 2
-    execute_on = 'TIMESTEP_END'
-    variable = Nneighbor_z
-  [../]
-
-  [./aux_N_x]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = n_master_czm
-    component = 0
-    execute_on = 'TIMESTEP_END'
-    variable = N_x
-  [../]
-  [./aux_N_y]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = n_master_czm
-    component = 1
-    execute_on = 'TIMESTEP_END'
-    variable = N_y
-  [../]
-  [./aux_N_z]
-    type = MaterialRealVectorValueAux
-    boundary = 'interface'
-    property = n_master_czm
-    component = 2
-    execute_on = 'TIMESTEP_END'
-    variable = N_z
-  [../]
 
   [./aux_Navg_x]
     type = MaterialRealVectorValueAux
@@ -150,6 +125,30 @@
     execute_on = 'TIMESTEP_END'
     variable = Navg_z
   [../]
+  [./aux_Tavg_x]
+    type = MaterialRealVectorValueAux
+    boundary = 'interface'
+    property = traction_global_avg
+    component = 0
+    execute_on = 'TIMESTEP_END'
+    variable = Tavg_x
+  [../]
+  [./aux_Tavg_y]
+    type = MaterialRealVectorValueAux
+    boundary = 'interface'
+    property = traction_global_avg
+    component = 1
+    execute_on = 'TIMESTEP_END'
+    variable = Tavg_y
+  [../]
+  [./aux_Tavg_z]
+    type = MaterialRealVectorValueAux
+    boundary = 'interface'
+    property = traction_global_avg
+    component = 2
+    execute_on = 'TIMESTEP_END'
+    variable = Tavg_z
+  [../]
 []
 
 
@@ -160,24 +159,41 @@
   add_displacements = true
 []
 
-# [Modules/TensorMechanics/CohesiveZoneMaster]
-#   [./czm]
-#     boundary = 'interface'
-#     displacements = 'disp_x disp_y disp_z'
-#   [../]
-# []
-
-# [InterfaceKernels]
-#   [./x]
-#     type = CZMInterfaceKernelLD
-#     component = 0
-#     displacements = 'disp_x disp_y disp_z'
-#     use_displaced_mesh = true
-#     variable = disp_x
-#     neighbor_var = disp_x
-#     boundary = 'interface'
-#   []
-# []
+[InterfaceKernels]
+  [./x]
+    type = CZMInterfaceKernel
+    component = 0
+    displacements = 'disp_x disp_y disp_z'
+    use_displaced_mesh = false
+    variable = disp_x
+    neighbor_var = disp_x
+    boundary = 'interface'
+    save_in = 'R_x R_neigh_x'
+    save_in_var_side = 'm s'
+  []
+  [./y]
+    type = CZMInterfaceKernel
+    component = 1
+    displacements = 'disp_x disp_y disp_z'
+    use_displaced_mesh = false
+    variable = disp_y
+    neighbor_var = disp_y
+    boundary = 'interface'
+    save_in = 'R_y R_neigh_y'
+    save_in_var_side = 'm s'
+  []
+  [./z]
+    type = CZMInterfaceKernel
+    component = 2
+    displacements = 'disp_x disp_y disp_z'
+    use_displaced_mesh = false
+    variable = disp_z
+    neighbor_var = disp_z
+    boundary = 'interface'
+    save_in = 'R_z R_neigh_z'
+    save_in_var_side = 'm s'
+  []
+[]
 
 [Materials]
   [./stress]
@@ -187,10 +203,11 @@
     large_kinematics = true
   [../]
   [./czm]
-    type = CZMMaterialLargeDefBase
+    type = CZMMaterialLD
     displacements = 'disp_x disp_y disp_z'
     boundary = 'interface'
     large_kinematics = true
+    stagger_kinematics = false
     # E = 1e2
     # G = 1e2
     # interface_thickness = 1
@@ -219,7 +236,7 @@
   nl_abs_tol = 1e-6
   dtmin = 0.05
   dtmax = 0.05
-  end_time = 2.05
+  end_time = 2.0
 []
 
 [Functions]
