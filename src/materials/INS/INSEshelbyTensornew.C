@@ -11,7 +11,7 @@
 #include "RankTwoTensor.h"
 #include "MooseMesh.h"
 
-registerMooseObject("NavierStokesApp", INSEshelbyTensornew);
+registerMooseObject("DeerApp", INSEshelbyTensornew);
 
 InputParameters
 INSEshelbyTensornew::validParams()

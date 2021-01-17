@@ -10,7 +10,7 @@
 #include "INSStressComponentAuxMOD_RZ.h"
 #include "MooseMesh.h"
 
-registerMooseObject("NavierStokesApp", INSStressComponentAuxMOD_RZ);
+registerMooseObject("DeerApp", INSStressComponentAuxMOD_RZ);
 
 InputParameters
 INSStressComponentAuxMOD_RZ::validParams()

@@ -11,9 +11,9 @@
 #include "Function.h"
 #include "Assembly.h"
 #include "NonlinearSystemBase.h"
-#include "INSADObjectTracker.h"
+// #include "INSADObjectTracker.h"
 
-registerMooseObject("NavierStokesApp", INSADStressStrain);
+registerMooseObject("DeerApp", INSADStressStrain);
 
 InputParameters
 INSADStressStrain::validParams()

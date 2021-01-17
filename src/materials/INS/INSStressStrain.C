@@ -13,7 +13,7 @@
 #include "NonlinearSystemBase.h"
 // #include "INSADObjectTracker.h"
 
-registerMooseObject("NavierStokesApp", INSStressStrain);
+registerMooseObject("DeerApp", INSStressStrain);
 
 InputParameters
 INSStressStrain::validParams()
