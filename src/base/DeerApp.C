@@ -33,6 +33,7 @@ static void associateSyntaxInner(Syntax &syntax,
   registerSyntax("RankTwoTensorPostprocessorTimeIntegralAction",
                  "RankTwoTensorPostprocessorTimeIntegral/*");
   registerSyntax("CZMStrainAction", "CZMStrain");
+  registerSyntax("INSDomainIntegralAction", "INSDomainIntegral");
 }
 
 void DeerApp::registerApps() { registerApp(DeerApp); }
